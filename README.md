@@ -31,7 +31,7 @@ The gem is available at rubygems.org, so you can install it with:
   require 'ckan'
 
   # Optionally, set the base API url
-  CKAN::API.api_base = "...your CKAN API URL ..."
+  CKAN::API.api_url = "...your CKAN API URL ..."
 
   # get all CKAN packages
   packages = CKAN::Package.find
