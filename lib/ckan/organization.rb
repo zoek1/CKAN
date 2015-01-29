@@ -66,6 +66,19 @@ module CKAN
       res = http.request(req)
       Organization.new(JSON::parse(res.body)["result"]) if res.is_a?(Net::HTTPSuccess)
     end
+
+    def self.delete(id, api_key)
+      params = { :id => id }
+     
+      uri = get_local_uri("delete")
+      http = Net::HTTP.new(uri.host, uri.port)
+      req = Net::HTTP::Post.new(uri.path, initheader = {'Content-Type' =>'application/json'})
+      req['X-CKAN-API-Key'] = api_key
+
+      req.body = params.to_json
+      res = http.request(req)
+      JSON::parse(res.body)["success"] if res.is_a?(Net::HTTPSuccess)
+    end
   end
 end
 # puts Organization.list(all_fields: true, order_by: "packages", organizations: ["escuela-de-datos", "buendia-laredo"])
