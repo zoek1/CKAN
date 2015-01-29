@@ -31,7 +31,7 @@ The gem is available at rubygems.org, so you can install it with:
   require 'ckan'
 
   # Optionally, set the base API url
-  CKAN::API.api_base = "...your CKAN API URL ..."
+  CKAN::API.api_url = "...your CKAN API URL ..."
 
   # get all CKAN packages
   packages = CKAN::Package.find
@@ -53,6 +53,21 @@ The gem is available at rubygems.org, so you can install it with:
 
   # get the list of packages inside a group
   groups.first.packages
+  
+  # query for CKAN organizations
+  organization = CKAN::Organization
+  
+  # get the list of the organizations
+  organization.list
+  
+  # show one organization
+  organization.show "codeando-mexico"
+  
+  # create a organization
+  organization.create "abriendo-datos", "API-KEY", description: "Abriendo datos"
+  
+  # delete a organization
+  organization.delete "abriendo-datos"
 ```
 
 ## LICENSE:
