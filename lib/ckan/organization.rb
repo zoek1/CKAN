@@ -39,7 +39,12 @@ module CKAN
       uri.query = URI.encode_www_form(params)
       res = Net::HTTP.get_response(uri)
 
-      JSON::parse(res.body)["result"] if res.is_a?(Net::HTTPSuccess)
+      resjson = JSON::parse(res.body)["result"] if res.is_a?(Net::HTTPSuccess)
+      unless opts[:all_fields].nil? or resjson.nil? 
+        resjson.map { |j| Organization.new j }
+      else
+        resjson
+      end
     end
 
     def self.show(id, include_datasets=true)
