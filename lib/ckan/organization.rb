@@ -1,52 +1,72 @@
 require 'json'
 require 'net/http'
-require 'ckan'
-
-CKAN::API.api_url = "http://172.17.0.2/api/"
 
 module CKAN
-class Organization
-  def initialize()
+  class Organization < Model
+    self.site = "action/organization"
 
-  organization = [:display_name, :description, :title, :image_display_url, :approval_status, :is_organization,
+    PROPERTIES = [ :display_name, :description, :title, :image_display_url, :approval_status, :is_organization,
    	          :state, :image_url, :revision_id, :packages, :type, :id, :name ]
 
-  # Build getter y setters
+    PROPERTIES.each { |f| attr_accessor f }
+
+    def initialize(attributes = {})
+      attributes.each { |key, value|
+        self.send("#{key}=", value) if PROPERTIES.member? key.to_sym
+      }
+    end
+
+    def to_hash(avoidables = [])
+      hash = {}
+      self.instance_variables.each do |var|
+        key = var.to_s.delete("@").to_sym
+        hash[key] = self.instance_variable_get(var) unless avoidables.member? key
+      end
+      hash
+    end
+
+    def self.get_local_uri(operation)
+      uri = URI(self.site + "_" + operation)
+    end
+
+    def self.list(opts={})
+      params = {}
+      keys = [:all_fields, :order_by, :sort, :organizations]
+      
+      keys.each { |k| params[k] = opts[k] unless opts[k].nil? }
+      
+      uri = get_local_uri("list")
+      uri.query = URI.encode_www_form(params)
+      res = Net::HTTP.get_response(uri)
+
+      JSON::parse(res.body)["result"] if res.is_a?(Net::HTTPSuccess)
+    end
+
+    def self.show(id, include_datasets=true)
+      uri = get_local_uri("show")
+      params = {}
+      params[:id] = id # Name or ID
+      params[:include_datasets] = include_datasets
+
+      uri.query = URI.encode_www_form(params)
+      res = Net::HTTP.get_response(uri)
+      JSON::parse(res.body)["result"] if res.is_a?(Net::HTTPSuccess)
+    end
+
+    def self.create(name, api_key, opts = {})
+      params = { :name => name }
+      PROPERTIES.each { |p| params[p] = opts[p] unless opts[p].nil? }
+     
+      uri = get_local_uri("create")
+      http = Net::HTTP.new(uri.host, uri.port)
+      req = Net::HTTP::Post.new(uri.path, initheader = {'Content-Type' =>'application/json'})
+      req['X-CKAN-API-Key'] = api_key
+
+      req.body = params.to_json
+      res = http.request(req)
+      Organization.new(JSON::parse(res.body)["result"]) if res.is_a?(Net::HTTPSuccess)
+    end
   end
-
-  def self.get_local_uri(operation)
-    uri = URI("http://datamx.io/api/action/organization_" + operation)
-  end
-
-  def self.list(opts={})
-    uri = get_local_uri("list")
-    puts opts
-    params = {}
-    params[:all_fields] = opts[:all_fields] unless opts[:all_fields].nil?
-    params[:order_by] = opts[:order_by] unless opts[:order_by].nil?
-    params[:sort] = opts[:sort] unless opts[:sort].nil?
-    params[:organizations] = opts[:organizations] unless opts[:organizations].nil?
-    
-    uri.query = URI.encode_www_form(params)
-    puts uri
-    res = Net::HTTP.get_response(uri)
-
-    JSON::parse(res.body)["result"] if res.is_a?(Net::HTTPSuccess)
-  end
-
-  def self.show(id, include_datasets=true)
-    uri = get_local_uri("show")
-    params = {}
-    params[:id] = id # Name or id
-    params[:include_datasets] = include_datasets
-
-    uri.query = URI.encode_www_form(params)
-    puts uri
-    res = Net::HTTP.get_response(uri)
-    JSON::parse(res.body)["result"] if res.is_a?(Net::HTTPSuccess)
-  end
-
-end
 end
 # puts Organization.list(all_fields: true, order_by: "packages", organizations: ["escuela-de-datos", "buendia-laredo"])
-puts Organization.show(ARGV[0])
+# puts Organization.show(ARGV[0])
