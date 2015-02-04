@@ -34,5 +34,25 @@ module CKAN
       res = Net::HTTP.get_response(uri)
       JSON::parse(res.body)["result"].map { |r| Harvest.new r}  if res.is_a?(Net::HTTPSuccess)
     end
+
+    def self.create_job(url, name, source_type, api_key, opts={})
+      keys = [:title, :notes, :frequency, :config]
+      params = {}
+
+      keys.each { |k| params[k] = opts[k] unless opts[k].nil? }
+      params[:url] = url
+      params[:name] = name
+      params[:source_type] = source_type
+
+      uri = get_local_uri("create")
+
+      http = Net::HTTP.new(uri.host, uri.port)
+      req = Net::HTTP::Post.new(uri.path, initheader =  {"Content-Type" => "aplication/json"})
+
+      req["X-CKAN-API-Key"] = api_key
+      req.body = params.to_json
+      res = http.request(req)
+      JSON::parse(res.body)["success"] if res.is_a?(Net::HTTPSuccess)
+    end
   end
 end
