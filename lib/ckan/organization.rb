@@ -84,6 +84,21 @@ module CKAN
       res = http.request(req)
       JSON::parse(res.body)["success"] if res.is_a?(Net::HTTPSuccess)
     end
+
+    def self.find_by(api_key, fields={})
+      orgs = list(all_fields: true).map do |org|
+        res = fields.map do |key, val| 
+          if not org.send(key).nil? and org.send(key) == val
+            true
+          else
+            false
+          end
+        end
+        org unless res.member? false
+      end
+      orgs.delete nil
+      orgs
+    end
   end
 end
 # puts Organization.list(all_fields: true, order_by: "packages", organizations: ["escuela-de-datos", "buendia-laredo"])

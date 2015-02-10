@@ -54,5 +54,20 @@ module CKAN
       res = http.request(req)
       JSON::parse(res.body)["success"] if res.is_a?(Net::HTTPSuccess)
     end
+
+    def self.find_by(api_key, fields={})
+      jobs = list_jobs.map do |job|
+        res = fields.map do |key, val|
+          if not job.send(key).nil? and job.send(key) == val
+            true
+          else
+            false
+          end
+        end
+        job unless res.member? false
+      end
+      jobs.delete nil
+      jobs
+    end
   end
 end
