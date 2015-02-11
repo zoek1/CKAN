@@ -6,7 +6,7 @@ module CKAN
     self.site = "action/harvest_source"
 
     PROPERTIES = [:id, :url, :title, :description, :config, :created, :type, :active, :user_id, :publisher_id, :frequency, :next_run,
-                  :publisher_title, :status]
+                  :publisher_title, :status, :owner_org]
 
     PROPERTIES.each { |f| attr_accessor f }
 
@@ -36,7 +36,7 @@ module CKAN
     end
 
     def self.create_job(url, name, source_type, api_key, opts={})
-      keys = [:title, :notes, :frequency, :config]
+      keys = [:title, :notes, :frequency, :config, :owner_org]
       params = {}
 
       keys.each { |k| params[k] = opts[k] unless opts[k].nil? }

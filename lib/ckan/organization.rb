@@ -75,7 +75,7 @@ module CKAN
     def self.create_if_not_exists(name, api_key, opts={})
       org = find_by(api_key, name: name)
       if org.empty?
-        org = create(name, api_key, opts)
+        org = [create(name, api_key, opts)]
       end
       org
     end
